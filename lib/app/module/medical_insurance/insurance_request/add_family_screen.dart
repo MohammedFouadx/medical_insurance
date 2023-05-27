@@ -1,17 +1,21 @@
 
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:medical_insurance/app/core/utils/empty_padding.dart';
 
 import '../../../core/utils/constants.dart';
 import '../../../global_widgets/custom_app_bar.dart';
 import '../../../global_widgets/custom_buttons.dart';
 import '../../../global_widgets/custom_drop_down.dart';
+import '../../../global_widgets/custom_sliding_panel.dart';
+import '../../../global_widgets/custom_two_text.dart';
 import '../../../global_widgets/text_form_field_with_name.dart';
-import '../../../services/screen_navigation_service.dart';
 import 'model/insurance_request_controller.dart';
-
+import 'package:path/path.dart' as p;
 
 class AddFamilyScreen extends StatefulWidget {
   const AddFamilyScreen({Key? key}) : super(key: key);
@@ -30,6 +34,25 @@ class _AddFamilyScreenState extends State<AddFamilyScreen> {
 
   InsuranceRequestController maritalStatusController = InsuranceRequestController();
   String  currentRelation = "الام";
+
+  File? _image;
+  String? imageName;
+
+  Future getImageFromCamera() async {
+    var image = await ImagePicker().getImage(source: ImageSource.camera);
+    setState(() {
+      _image = File(image!.path);
+      imageName = p.basename(_image!.path);
+    });
+  }
+
+  Future getImageFromGallery() async {
+    var image = await ImagePicker().getImage(source: ImageSource.gallery);
+    setState(() {
+      _image = File(image!.path);
+      imageName = p.basename(_image!.path);
+    });
+  }
 
   @override
   void dispose() {
@@ -130,6 +153,135 @@ class _AddFamilyScreenState extends State<AddFamilyScreen> {
                         onFieldSubmitted: (){
                           FocusScope.of(context).nextFocus();
                         },
+                      ),
+
+                      20.ph,
+
+                      /// image
+
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+
+                          Text(
+                            "إختر صورة",
+                            textAlign: TextAlign.right,
+                            style: Theme.of(context).textTheme.bodyText1,
+                          ),
+
+                          10.ph,
+
+                          InkWell(
+                            onTap: () async{
+                              await  showModalBottomSheet(
+                                  context: context,
+                                  elevation: 0.3,
+                                  isScrollControlled: true,
+                                  enableDrag: true,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(8.0)
+                                    ),
+                                  ),
+                                  builder: (context) {
+                                    return StatefulBuilder(
+                                      builder: (context , mySetState){
+                                        return Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Wrap(
+                                            crossAxisAlignment: WrapCrossAlignment.start,
+                                            runSpacing: 10.0.h,
+                                            runAlignment: WrapAlignment.spaceBetween,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 10.0),
+                                                child: CustomTowText(
+                                                  title: "إختر صورة",
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  titleStyle: Theme.of(context).textTheme.bodyText1!.copyWith(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 22.sp
+
+                                                  ),
+                                                  subWidget: Padding(
+                                                    padding:  EdgeInsets.symmetric(horizontal: 5.0.w),
+                                                    child: InkWell(
+                                                      onTap: (){
+                                                        Navigator.of(context).pop();
+                                                      },
+                                                      child: Icon(
+                                                        Icons.close,
+                                                        size: 30,
+                                                        color: Theme.of(context).secondaryHeaderColor,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              3.ph,
+                                              Text(
+                                                "قم با ختيار صورة من المعرض أو قم بفتح الكاميرا",
+                                                style: Theme.of(context).textTheme.caption!.copyWith(
+                                                    fontWeight: FontWeight.bold
+                                                ),
+                                              ),
+                                              20.ph,
+
+                                              CustomSlidingPanel(
+                                                onTapCamera: () {
+                                                  getImageFromCamera();
+                                                },
+                                                onTapGallery: () {
+                                                  getImageFromGallery();
+                                                },
+                                              ),
+
+                                              20.ph,
+
+                                              CustomButtons(
+                                                height: 40.h,
+                                                text: "حفظ",
+                                                buttonColor: Theme.of(context).secondaryHeaderColor,
+                                                onTap: (){
+                                                  Navigator.of(context).pop();
+                                                },
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  });
+                            },
+                            child: Container(
+                              height: 40.h,
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.symmetric(vertical: 10.h , horizontal: 10.w),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+                                  border: Border.all(color: Colors.grey[300]!)
+                              ),
+                              child: Text(
+                                "إختر صورة",
+                                style: Theme.of(context).textTheme.caption,
+                              ),
+                            ),
+                          ),
+
+                          10.ph,
+
+
+                          _image == null
+                          ? 0.ph
+                          : SizedBox(
+                            height: 200.h,
+                            width: MediaQuery.of(context).size.width,
+                            child: Image.file(
+                              _image!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        ],
                       ),
 
                       20.ph,
